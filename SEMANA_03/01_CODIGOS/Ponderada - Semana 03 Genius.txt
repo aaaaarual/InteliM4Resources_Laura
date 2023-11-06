@@ -1,0 +1,99 @@
+const int ledPins[] = {16, 4, 17, 15};
+const int buttonPins[] = {32, 35, 33, 34};
+const int buttonReset = 25;
+
+int sequence[100]; // Armazena a sequência gerada pelo jogo
+int playerSequence[100]; // Armazena a sequência inserida pelo jogador
+int sequenceLength = 0;
+int playerTurn = false;
+int score = 0;
+int delayTime = 500; // Tempo de espera inicial
+
+void setup() {
+  for (int i = 0; i < 4; i++) {
+    pinMode(ledPins[i], OUTPUT);
+    pinMode(buttonPins[i], INPUT_PULLUP);
+  }
+  pinMode(buttonReset, INPUT_PULLUP);
+  // Comunicação serial (opcional, usado para depuração)
+  Serial.begin(9600);
+  // Gerador de números aleatórios
+  randomSeed(analogRead(0));
+  // Inicializa o jogo
+  startGame();
+}
+
+void loop() {
+  if (playerTurn) {
+    checkPlayerInput();
+  }
+}
+
+void startGame() {
+  turnOnAllLeds();
+  delay(250);
+  turnOffAllLeds();
+  delay(250);
+  sequenceLength = 0;
+  playerTurn = false;
+  score = 0;
+  addStepToSequence();
+  playSequence();
+}
+
+void addStepToSequence() {
+  sequence[sequenceLength] = random(4); // Gera um valor de 0 a 3 para as 4 cores
+  sequenceLength++;
+}
+
+void playSequence() {
+  for (int i = 0; i < sequenceLength; i++) {
+    int color = sequence[i];
+    flashLed(ledPins[color]);
+    delay(delayTime); // Tempo de espera entre as cores e os sons
+    turnOffAllLeds();
+    delay(200); // Tempo de espera entre as cores
+    // Reduza o tempo de espera à medida que o jogador avança
+    delayTime -= 10; // Reduza o valor como desejar
+  }
+  playerTurn = true;
+}
+
+void checkPlayerInput() {
+  static int playerStep = 0; // Variável para acompanhar a etapa atual do jogador
+  for (int i = 0; i < 4; i++) {
+    if (digitalRead(buttonPins[i]) == LOW) {
+      flashLed(ledPins[i]);
+      if (sequence[playerStep] == i) {
+        playerStep++;
+      } else {
+        startGame();
+      }
+    }
+  }
+  if (playerStep == sequenceLength) {
+    playerStep = 0;
+    delay(400); // Tempo de espera antes de tocar a próxima sequência
+    score++;
+    addStepToSequence();
+    playSequence();
+  }
+}
+
+void flashLed(int led) {
+  digitalWrite(led, HIGH);
+  delay(300);
+  digitalWrite(led, LOW);
+}
+
+void turnOnAllLeds() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(ledPins[i], HIGH);
+  }
+}
+
+void turnOffAllLeds() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(ledPins[i], LOW);
+  }
+}
