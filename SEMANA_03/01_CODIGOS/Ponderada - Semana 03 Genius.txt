@@ -50,11 +50,11 @@ void playSequence() {
   for (int i = 0; i < sequenceLength; i++) {
     int color = sequence[i];
     flashLed(ledPins[color]);
-    delay(delayTime); // Tempo de espera entre as cores e os sons
+    delay(delayTime); // Tempo de espera entre as cores
     turnOffAllLeds();
     delay(200); // Tempo de espera entre as cores
     // Reduza o tempo de espera à medida que o jogador avança
-    delayTime -= 10; // Reduza o valor como desejar
+    delayTime -= 10; 
   }
   playerTurn = true;
 }
